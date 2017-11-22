@@ -24,7 +24,7 @@ public class ServerThread extends Thread {
             serverSocket = new DatagramSocket(3000);
             serverSocket.setSoTimeout(1000);
         } catch (SocketException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -38,7 +38,7 @@ public class ServerThread extends Thread {
         while (running) {
             try {
                 serverSocket.receive(packet);
-                String request = new String(packet.getData());
+                String request = new String(packet.getData()).replaceAll("\\u0000", "");
                 handleRequest(request, packet.getAddress());
             } catch (IOException e) {
                 String message = e.getMessage();
@@ -54,7 +54,10 @@ public class ServerThread extends Thread {
     }
 
     private void handleRequest(String request, InetAddress ipAddress) {
-        String prefix = request.split(":")[0];
+        System.out.println();
+        System.out.println("RECIEVE (" + ipAddress.getHostAddress() + "): " + request);
+
+        String prefix = request.split(":")[0] + ":";
         String payload = request.split(":")[1];
 
         String userName;
@@ -74,7 +77,7 @@ public class ServerThread extends Thread {
 
                 sendMessage(API.PREFIX_STATUS + status, ipAddress);
                 if (isLoginSuccessfull) {
-                    sendMessage(API.PREFIX_STATUS + API.STATUS_OK, ipAddress);
+                    //TODO
                 }
 
                 break;
@@ -129,14 +132,15 @@ public class ServerThread extends Thread {
     }
 
     private void sendMessage(String message, InetAddress ipAddress) {
-        byte[] buffer = new byte[256];
-        buffer = message.getBytes();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, ipAddress, 3000);
+        byte[] buffer = message.getBytes();
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, ipAddress, 4000);
 
         try {
             serverSocket.send(packet);
+            System.out.println();
+            System.out.println("SEND (" + ipAddress.getHostAddress() + "): " + message);
         } catch (IOException e) {
-            //TODO
+            e.printStackTrace();
         }
     }
 
