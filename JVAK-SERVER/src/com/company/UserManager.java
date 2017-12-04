@@ -14,14 +14,16 @@ import java.util.Map;
 
 public class UserManager {
 
-    private static UserManager instance = new UserManager();
+    //public static final String USERS_FILE_NAME = "users.csv";
 
-    public static final String USERS_FILE_NAME = "users.csv";
+    private static UserManager instance = new UserManager();
 
     private HashMap<String, User> users = new HashMap<>();
 
+
     private UserManager() {
-        loadUsers();
+        //loadUsers();
+        loadUsersFromDB();
     }
 
     public static UserManager getInstance() {
@@ -41,11 +43,21 @@ public class UserManager {
         System.out.println();
         System.out.println(username + " was created successfully.");
 
-        saveUsers();
+        //saveUsers();
+        insertUserInDB();
+    }
+
+    private void loadUsersFromDB() {
+        //TODO
+    }
+
+    private void insertUserInDB() {
+        //TODO
     }
 
     public void deleteUser(int position) {
-        users.remove(position);
+        //users.remove(position);
+        //TODO
 
         System.out.println();
         System.out.println("User " + position + " deleted successfully!");
@@ -83,44 +95,44 @@ public class UserManager {
         return users.size() > 0;
     }
 
-    private void saveUsers() {
-        Path filePath = Paths.get(USERS_FILE_NAME);
-        ArrayList<String> usersData = new ArrayList<>();
-
-        for (Map.Entry<String, User> userEntry: users.entrySet()) {
-            User user = userEntry.getValue();
-            usersData.add(user.getUsername() + "," + user.getPassword() + "," + user.getEmail());
-        }
-
-        try {
-            Files.deleteIfExists(filePath);
-            Files.write(filePath, usersData, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            //e.printStackTrace();
-        }
-    }
-
-    private void loadUsers() {
-        Path filePath = Paths.get(USERS_FILE_NAME);
-        List<String> usersData = null;
-
-        try {
-            usersData = Files.readAllLines(filePath, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            //e.printStackTrace();
-        }
-
-        if (usersData != null) {
-            for (String userData: usersData) {
-                String[] userFields = userData.split(",");
-
-                User user = new User();
-                user.setUsername(userFields[0]);
-                user.setPassword(userFields[1]);
-                user.setEmail(userFields[2]);
-
-                users.put(user.getUsername(), user);
-            }
-        }
-    }
+//    private void saveUsers() {
+//        Path filePath = Paths.get(USERS_FILE_NAME);
+//        ArrayList<String> usersData = new ArrayList<>();
+//
+//        for (Map.Entry<String, User> userEntry: users.entrySet()) {
+//            User user = userEntry.getValue();
+//            usersData.add(user.getUsername() + "," + user.getPassword() + "," + user.getEmail());
+//        }
+//
+//        try {
+//            Files.deleteIfExists(filePath);
+//            Files.write(filePath, usersData, StandardCharsets.UTF_8);
+//        } catch (IOException e) {
+//            //e.printStackTrace();
+//        }
+//    }
+//
+//    private void loadUsers() {
+//        Path filePath = Paths.get(USERS_FILE_NAME);
+//        List<String> usersData = null;
+//
+//        try {
+//            usersData = Files.readAllLines(filePath, StandardCharsets.UTF_8);
+//        } catch (IOException e) {
+//            //e.printStackTrace();
+//        }
+//
+//        if (usersData != null) {
+//            for (String userData: usersData) {
+//                String[] userFields = userData.split(",");
+//
+//                User user = new User();
+//                user.setUsername(userFields[0]);
+//                user.setPassword(userFields[1]);
+//                user.setEmail(userFields[2]);
+//
+//                users.put(user.getUsername(), user);
+//            }
+//        }
+//    }
 }

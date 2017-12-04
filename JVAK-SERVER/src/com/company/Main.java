@@ -1,6 +1,9 @@
 package com.company;
 
 import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class Main {
@@ -12,6 +15,8 @@ public class Main {
 
     private static ServerThread networkingThread;
 
+    private static Connection dbConnection;
+
     public static void main(String[] args) {
         for (String argument : args) {
             System.out.println(argument);
@@ -19,6 +24,17 @@ public class Main {
 
         networkingThread = new ServerThread("networkingThread");
         networkingThread.start();
+
+        //TODO Move to a separate MySQLManager class.
+        try {
+            dbConnection = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/chat_server?user=root&password=test");
+            System.out.println("Connected to SQL server.");
+        } catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage());
+            System.out.println("SQLState: " + ex.getSQLState());
+            System.out.println("ErrorCode: " + ex.getErrorCode());
+        }
 
         //Looping while running == true
         while(running) {
