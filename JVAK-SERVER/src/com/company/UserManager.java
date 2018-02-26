@@ -112,27 +112,23 @@ public class UserManager {
 //        }
 //    }
 //
-//    private void loadUsers() {
-//        Path filePath = Paths.get(USERS_FILE_NAME);
-//        List<String> usersData = null;
-//
-//        try {
-//            usersData = Files.readAllLines(filePath, StandardCharsets.UTF_8);
-//        } catch (IOException e) {
-//            //e.printStackTrace();
-//        }
-//
-//        if (usersData != null) {
-//            for (String userData: usersData) {
-//                String[] userFields = userData.split(",");
-//
-//                User user = new User();
-//                user.setUsername(userFields[0]);
-//                user.setPassword(userFields[1]);
-//                user.setEmail(userFields[2]);
-//
-//                users.put(user.getUsername(), user);
-//            }
-//        }
-//    }
+    private void loadUsers() {
+
+
+        sql = "SELECT id, first, last, age FROM Employees";
+        ResultSet rs = stmt.executeQuery(sql);
+        
+        while(rs.next()){
+            String name = rs.getString("...");
+            String password = rs.getString("password");
+            String email = rs.getString("...");
+        }
+                User user = new User();
+                user.setUsername(name);
+                user.setPassword(password);
+                user.setEmail(email);
+
+                users.put(user.getUsername(), user);
+        }
+    }
 }
