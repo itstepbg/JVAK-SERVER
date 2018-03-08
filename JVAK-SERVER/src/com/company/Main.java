@@ -1,9 +1,6 @@
 package com.company;
 
-import java.nio.file.Files;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
@@ -15,8 +12,6 @@ public class Main {
 
     private static ServerThread networkingThread;
 
-    private static Connection dbConnection;
-
     public static void main(String[] args) {
         for (String argument : args) {
             System.out.println(argument);
@@ -25,16 +20,8 @@ public class Main {
         networkingThread = new ServerThread("networkingThread");
         networkingThread.start();
 
-        //TODO Move to a separate MySQLManager class.
-        try {
-            dbConnection = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/chat_server?user=root&password=test");
-            System.out.println("Connected to SQL server.");
-        } catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage());
-            System.out.println("SQLState: " + ex.getSQLState());
-            System.out.println("ErrorCode: " + ex.getErrorCode());
-        }
+        //Load users from database.
+        userManager.loadUsersFromDB();
 
         //Looping while running == true
         while(running) {
@@ -42,9 +29,9 @@ public class Main {
             showMenu();
 
             //Wait for the user input, and read it once the user has entered something.
-            //Pass the UserManager instance to the method.
             readUserInput();
         }
+
     }
 
     private static void showMenu() {
@@ -104,7 +91,7 @@ public class Main {
                 menuListUsers();
                 break;
             case 4:
-                //menuSearchUser();
+                menuSearchUsers();
                 break;
             case 5:
                 System.out.println();
@@ -135,32 +122,38 @@ public class Main {
         System.out.print("Please enter an E-mail Address: ");
         String email = scanner.next();
 
-        userManager.createUser(name, password, email);
+        userManager.addUserToDb(name, password, email);
     }
 
     private static void menuDeleteUser() {
         if (userManager.areThereRegisteredUsers()) {
+            int getTotalUsers = userManager.getTotalUsers();
             System.out.println();
             System.out.println("---= Delete a User =---");
             System.out.println();
-            System.out.print("Please enter the user name you want to delete: ");
+            System.out.print("Please enter the ID of the user you want to delete (1 - " + getTotalUsers + "):");
+
             Scanner scanner = new Scanner(System.in);
             int userIndex = scanner.nextInt();
 
-            boolean waitConfirmation = true;
-            while (waitConfirmation) {
-                System.out.println();
-                System.out.print("Are you sure you want to delete the user with index: " + userIndex + " - (yY/nN) ?");
-                String answer = scanner.next();
-                if ((answer.equals("y")) || (answer.equals("Y"))) {
-                    userManager.deleteUser(userIndex - 1);
-                    break;
-                } else {
+            if ((userIndex > 0) && (userIndex <= getTotalUsers)) {
+                boolean waitConfirmation = true;
+                while (waitConfirmation) {
                     System.out.println();
-                    System.out.println("Returning to Menu..");
-                    System.out.println();
-                    break;
+                    System.out.print("Are you sure you want to delete the user with index: " + userIndex + " - (yY/nN) ?");
+                    String answer = scanner.next();
+                    if ((answer.equals("y")) || (answer.equals("Y"))) {
+                        userManager.deleteUser(userIndex - 1);
+                        break;
+                    } else {
+                        System.out.println();
+                        System.out.println("Returning to Menu..");
+                        System.out.println();
+                        break;
+                    }
                 }
+            } else {
+                displayNoSuchUserError(userIndex);
             }
         } else {
             displayNoUsersError();
@@ -170,13 +163,25 @@ public class Main {
     private static void menuSearchUsers() {
         if (userManager.areThereRegisteredUsers()) {
             System.out.println();
-            System.out.println("---= Search Usernames =---");
+            System.out.println("---= Search Username =---");
             System.out.println();
-            System.out.print("Please enter the user name you want to find: ");
+            System.out.print("Please enter the name of the user you want to find: ");
             Scanner scanner = new Scanner(System.in);
             String name = scanner.next();
-            //TODO Implement a user serach functionality in a more appropriate way.
-            //userManager.findUsers(name);
+
+            //Find the user with the entered name.
+            userManager.findUser(name);
+
+            System.out.println();
+            System.out.println("Press 'Enter' key to continue after checking results...");
+
+            //Wait for enter key and to check results.
+            try {
+                System.in.read();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         } else {
             displayNoUsersError();
         }
@@ -193,5 +198,10 @@ public class Main {
     private static void displayNoUsersError() {
         System.out.println();
         System.out.println("Please register a user to use this option!");
+    }
+
+    private static void displayNoSuchUserError(int selectedId) {
+        System.out.println();
+        System.out.println("User with an ID #" + selectedId + " does not exist.");
     }
 }
